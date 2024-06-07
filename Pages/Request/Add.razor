@@ -1,0 +1,644 @@
+﻿@page "/request/add"
+@inject WeatherForecastService ForecastService
+@inject IRequest _iRequest
+@inject IAPVDataData _iAPVDataData
+@inject IMasterData _iMasterData
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime;
+
+<PageTitle>Request</PageTitle>
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+
+                <EditForm Model="Model" class="form-horizontal form-label-left" OnInvalidSubmit="Save">
+                    <DataAnnotationsValidator />
+                    @* <ValidationSummary /> *@
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <div class="x_content">
+
+                                <input type="hidden" asp-for="requestId" />
+                                <input type="hidden" id="hdfrequestCategoryId" value="@Model.requestCategoryId" />
+                                <input type="hidden" id="hdfbusinessTypeId" value="@Model.businessTypeId" />
+                                <input type="hidden" id="hdfrequestSourceId" value="@Model.requestSourceId" />
+                                <input type="hidden" id="hdfcustomerLocationId" value="@Model.customerLocationId" />
+                                <input type="hidden" id="hdfbuNameId" value="@Model.hdfbuNameId" />
+                                <input type="hidden" id="hdfrepairLocationId" value="@Model.repairLocationId" />
+
+                                <div class="card card-primary">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Request Details</h3>
+                                    </div>
+                                    <div class="card-body">
+
+                                        <div class="row">
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="requestCategoryId" class="col-form-label-sm">Request Category:</label>
+                                                    <div class="input-group">                                                                                                         
+                                                        <InputSelect id="requestCategoryId" @bind-Value="Model.requestCategoryId" class="form-control form-control-sm" placeholder="Request Category" >                                                            
+                                                            <option value="">Request Category</option>                                                             
+                                                            @if (requestCategoryList != null && requestCategoryList.data != null)
+                                                                {
+                                                                    @foreach (var cnt in requestCategoryList.data)
+                                                                    {
+                                                                        <option value="@cnt.columnId">@cnt.columnValue</option>
+                                                                    }
+                                                                }
+                                                        </InputSelect>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="businessTypeId" class="col-form-label-sm">Business Type:</label>
+                                                    <div class="input-group">
+                                                        @* <select asp-for="businessTypeId" class="form-control form-control-sm" placeholder="Business Type" required="required" onchange="request_events.onBussinessTypeChange(this);">
+                                                            <option value="">Business Type</option>
+                                                        </select> *@
+                                                        <InputSelect id="businessTypeId" @bind-Value="Model.businessTypeId" class="form-control form-control-sm" placeholder="Business Type" >   
+                                                            <option value="">Business Type</option>
+                                                             @if (businessTypeList != null && businessTypeList.data != null)
+                                                                {
+                                                                    @foreach (var cnt in businessTypeList.data)
+                                                                    {
+                                                                        <option value="@cnt.columnId">@cnt.columnValue</option>
+                                                                    }
+                                                                }
+                                                        </InputSelect>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="requestSourceId" class="col-form-label-sm">Request Source:</label>
+                                                    <div class="input-group">                                                        
+                                                        <InputSelect id="requestSourceId" class="form-control form-control-sm"
+                                                            ValueExpression="@(()=>Model.requestSourceId)" 
+                                                            Value="@Model.requestSourceId"
+                                                            ValueChanged="@((int value) => OnRequestSourceChanged(value))">
+
+                                                            <option value="">Request Source</option>
+                                                             @if (requestSourceList != null && requestSourceList.data != null)
+                                                                {
+                                                                    @foreach (var cnt in requestSourceList.data)
+                                                                    {
+                                                                        <option value="@cnt.columnId">@cnt.columnValue</option>
+                                                                    }
+                                                                }
+                                                        </InputSelect>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @if(divExectiveName)
+                                            {
+                                                <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                    <div class="form-group">
+                                                        <label asp-for="exectiveName" class="col-form-label-sm">Exective Name:</label>
+                                                        <div class="input-group">
+                                                            <InputText @bind-Value="Model.exectiveName" class="form-control form-control-sm" placeholder="Exective Name"></InputText>
+                                                            <ValidationMessage For="()=>Model.exectiveName"></ValidationMessage>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                            @if(divCCNumber)
+                                            {
+                                                <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                    <div class="form-group">
+                                                        <label asp-for="ccNumber" class="col-form-label-sm">CC Number:</label>
+                                                        <div class="input-group">                                                      
+                                                            <InputText @bind-Value="Model.ccNumber" class="form-control form-control-sm" placeholder="CC Number"></InputText>
+                                                            <ValidationMessage For="()=>Model.ccNumber"></ValidationMessage>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                            @if(divGRFOComment)
+                                            {
+                                                <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                    <div class="form-group">
+                                                        <label asp-for="grfoComment" class="col-form-label-sm">GRFO Comment:</label>
+                                                        <div class="input-group">
+                                                            <InputText @bind-Value="Model.grfoComment" class="form-control form-control-sm" placeholder="GRFO Comment"></InputText>
+                                                            <ValidationMessage For="()=>Model.grfoComment"></ValidationMessage>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }                                            
+                                        </div>
+
+                                        <div class="row">
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="requestorProjectGroup" class="col-form-label-sm">Requestor Project Group:</label>
+                                                    <div class="input-group">
+                                                        <InputText @bind-Value="Model.requestorProjectGroup" class="form-control form-control-sm" placeholder="Requestor Project Group" ></InputText>
+                                                        <ValidationMessage For="() => Model.requestorProjectGroup"></ValidationMessage>                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="requestor" class="col-form-label-sm">Requestor:</label>
+                                                    <div class="input-group">                                                       
+                                                        <InputText @bind-Value="Model.requestor" class="form-control form-control-sm" placeholder="Requestor" ></InputText>
+                                                        <ValidationMessage For="() => Model.requestor"></ValidationMessage>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <label asp-for="basePartNumber" class="col-form-label-sm">Base Part Number:</label>
+                                                <!-- radio -->
+                                                <div class="form-group row">                                                   
+                                                    <InputRadioGroup ValueChanged="@((e) => OnRadiochange(e))" TValue="string" ValueExpression="() => SelectedValue">
+                                                    @foreach (var item in Items)
+                                                    {
+                                                        bool Checked= false;
+                                                        if (SelectedValue.Equals(item, StringComparison.OrdinalIgnoreCase))
+                                                        {
+                                                            Checked = true;
+                                                        }
+                                                    <div class="form-check col-6">
+                                                        <InputRadio Value="@item" class="" checked=@Checked />
+                                                         &nbsp;&nbsp; @item <br />
+                                                    </div>
+                                                    }
+                                                </InputRadioGroup>
+
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="basePartNumber" class="col-form-label-sm">Base Part Number:</label>
+                                                    <div class="input-group">                                                        
+                                                        <InputText @bind-Value="Model.basePartNumber" class="form-control form-control-sm" placeholder="Base Part Number"></InputText>
+                                                        <a @onclick="()=>(AddBasepart(Model.basePartNumber))" class="text-warning">
+                                                            <i class="fa fa-plus" title="Add basepart number"></i>                                                        
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="solutionPartNumber" class="col-form-label-sm">Solution Part Number:</label>
+                                                    <div class="input-group">                                                        
+                                                        <InputText @bind-Value="Model.solutionPartNumber" class="form-control form-control-sm" placeholder="Solution Part Number" ></InputText>
+                                                        <ValidationMessage For="() => Model.solutionPartNumber"></ValidationMessage>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="needByDate" class="col-form-label-sm">Need By Date:</label>
+                                                    <div class="input-group">                                                        
+                                                        <InputText @bind-Value="Model.needByDate" class="form-control form-control-sm" placeholder="Need By Date" data-inputmask-alias="datetime"
+                                                                data-inputmask-inputformat="dd/mm/yyyy"
+                                                                data-mask></InputText>
+                                                        <ValidationMessage For="() => Model.needByDate"></ValidationMessage>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="buNameId" class="col-form-label-sm">BU Name:</label>
+                                                    <div class="input-group">                                                        
+                                                        <InputSelect id="buNameId" @bind-Value="Model.buNameId" class="form-control form-control-sm">   
+                                                            <option value="">BU Name</option>
+                                                             @if (buNamesList != null && buNamesList.data != null)
+                                                                {
+                                                                    @foreach (var cnt in buNamesList.data)
+                                                                    {
+                                                                        <option value="@cnt.columnId">@cnt.columnValue</option>
+                                                                    }
+                                                                }
+                                                        </InputSelect>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="repairLocationId" class="col-form-label-sm">Repair Site:</label>
+                                                    <div class="input-group">
+                                                       @*  <select asp-for="repairLocationId" class="form-control form-control-sm" placeholder="Repair Site" required="required">
+                                                            <option value="">Repair Site</option>
+                                                        </select>
+ *@
+                                                        <InputSelect id="repairLocationId" @bind-Value="Model.repairLocationId" class="form-control form-control-sm">   
+                                                            <option value="">Repair Site</option>
+                                                             @if (repairLocationList != null && repairLocationList.data != null)
+                                                                {
+                                                                    @foreach (var cnt in repairLocationList.data)
+                                                                    {
+                                                                        <option value="@cnt.columnId">@cnt.columnValue</option>
+                                                                    }
+                                                                }
+                                                        </InputSelect>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="targetCustomer" class="col-form-label-sm">Target Customer:</label>
+                                                    <div class="input-group">                                                       
+                                                        <InputText @bind-Value="Model.targetCustomer" class="form-control form-control-sm" placeholder="Target Customer"
+                                                                data-mask></InputText>
+                                                        <ValidationMessage For="() => Model.targetCustomer"></ValidationMessage>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="customerLocationId" class="col-form-label-sm">Customer Location:</label>
+                                                    <div class="input-group">                                                       
+                                                         <InputSelect id="customerLocationId" @bind-Value="Model.customerLocationId" class="form-control form-control-sm">   
+                                                            <option value="">Customer Location</option>
+                                                             @if (customerLocationsList != null && customerLocationsList.data != null)
+                                                                {
+                                                                    @foreach (var cnt in customerLocationsList.data)
+                                                                    {
+                                                                        <option value="@cnt.columnId">@cnt.columnValue</option>
+                                                                    }
+                                                                }
+                                                        </InputSelect>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="annualRepairForecast1" class="col-form-label-sm">Annual Repair Forecast (Y1):</label>
+                                                    <div class="input-group">                                                        
+                                                        <InputNumber @bind-Value="Model.annualRepairForecast1" class="form-control form-control-sm" placeholder="Annual Repair Forecast (Y1)"
+                                                                data-mask></InputNumber>
+                                                        <ValidationMessage For="() => Model.annualRepairForecast1"></ValidationMessage>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="annualRepairForecast2" class="col-form-label-sm">Annual Repair Forecast (Y2):</label>
+                                                    <div class="input-group">                                                        
+                                                        <InputNumber @bind-Value="Model.annualRepairForecast2" class="form-control form-control-sm" placeholder="Annual Repair Forecast (Y2)"
+                                                                data-mask></InputNumber>
+                                                        <ValidationMessage For="() => Model.annualRepairForecast2"></ValidationMessage>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
+                                                <div class="form-group">
+                                                    <label asp-for="comments" class="col-form-label-sm">Comments:</label>
+                                                    <div class="input-group">                                                        
+                                                        <InputText @bind-Value="Model.comments" class="form-control form-control-sm" placeholder="Comments"
+                                                                data-mask></InputText>
+                                                        <ValidationMessage For="() => Model.comments"></ValidationMessage>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card card-primary">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Base Part Details <i class="fa fa-home text-white" onclick="request_events.onBasePartNumberChange()"></i></h3>
+                                    </div>
+                                    <div class="card-body">
+                                        @if (multipleData != null && multipleData.Count > 0)
+                                            {
+                                                <!-- Show the cropped image in modal -->
+                                                <div class="row">
+                                                    <table id="dtRequestasda" class="table table-bordered table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Base Part</th>
+                                                                <th>Annual Repair Forecast</th>
+                                                                <th>Part Description</th>
+                                                                <th>STD Cost Base Part</th>                                                                
+                                                                <th>Extended Spend Potential</th>
+                                                                <th>T1 Customer Qty</th>
+                                                                <th>T2 Customer Qty</th>
+                                                                <th>MG3</th>
+                                                                <th>PBG</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach (var item in multipleData)
+                                                            {
+                                                                if(item != null)
+                                                                {                                                                                                                            
+                                                                    <tr>
+                                                                        <td>
+                                                                            <InputText @bind-Value="item.basePartNumber" class="form-control form-control-sm"></InputText>                                                                        
+                                                                        </td>
+                                                                        <td>                                                                      
+                                                                            <InputNumber @bind-Value="item.annualRepairForecast" class="form-control form-control-sm"></InputNumber>      
+                                                                        </td>
+                                                                        <td>
+                                                                            @(item != null ? item.partDescription : "")
+                                                                        </td>
+                                                                        <td>
+                                                                            @(item != null ? item.stdCostBasePart : "")
+                                                                        </td>                                                                        
+                                                                        <td>
+                                                                            @(item != null ? item.extendedSpendPotential : "")
+                                                                        </td>
+                                                                        <td>
+                                                                            @(item != null ? item.t1CustomerQty : "")
+                                                                        </td>
+                                                                        <td>
+                                                                            @(item != null ? item.t2CustomerQty : "")
+                                                                        </td>
+                                                                        <td>
+                                                                            @(item != null ? item.mg3 : "")
+                                                                        </td>
+                                                                        <td>
+                                                                            @(item != null ? item.pbg : "")
+                                                                        </td>
+                                                                        <td>
+                                                                            <a href='/request/delete/@item.basePartNumber' class='text-warning' title='Click here to edit record'><i class='fa fa-trash'></i></a>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            }
+                                    </div>
+                                </div>
+
+                                <div class="card card-primary d-none">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Status </h3>
+                                    </div>
+                                    <div class="card-body">
+
+                                        <div class="row">
+
+                                            <div class="col-md-4 col-sm-4 col-xs-12 form-group has-feedback item form-group">
+                                                Screening Status:
+                                                <label>
+                                                    @Model.screeningStatus
+                                                </label>
+                                            </div>
+                                            <div class="col-md-4 col-sm-4 col-xs-12 form-group has-feedback item form-group">
+                                                Business Case Status:
+                                                <label>
+                                                    @Model.businessCaseStatus
+                                                </label>
+                                            </div>
+                                            <div class="col-md-4 col-sm-4 col-xs-12 form-group has-feedback item form-group">
+                                                Pilot Review Status:
+                                                <label>
+                                                    @Model.pilotReviewStatus
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+
+                                            <div class="col-md-4 col-sm-4 col-xs-12 form-group has-feedback item form-group">
+                                                <label>
+                                                    <input type="checkbox" class="flat"> Pilot Execution
+                                                </label>
+                                            </div>
+                                            <div class="col-md-4 col-sm-4 col-xs-12 form-group has-feedback item form-group">
+
+                                                <div class="form-group">
+                                                    <label asp-for="prdDate" class="col-form-label-sm">Pilot Execution Date:</label>
+                                                    <div class="input-group">
+
+                                                        <input type="text" class="form-control " asp-for="prdDate"
+                                                                placeholder="Pilot Execution Date"
+                                                                data-inputmask-alias="datetime"
+                                                                data-inputmask-inputformat="dd/mm/yyyy"
+                                                                data-mask>
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  
+
+                </EditForm>
+                <div class="modal-footer">
+                    <a type="button" class="btn btn-secondary" href="/request">Cancel</a>
+                    <button class="btn btn-primary" @onclick="()=>Save()">Save</button>                    
+                </div>
+                <!-- /.card -->
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+</section>
+
+@code {
+
+    EditContext editContext;
+    ValidationMessageStore validationMessages;    
+    bool valid;
+    private RequestPostModels? Model = new();
+    private List<APVDataModels> multipleData = new();
+    [Parameter]
+    public bool Searchable { get; set; }
+
+    MasterDataResult requestCategoryList = new();
+    MasterDataResult businessTypeList = new();
+    MasterDataResult requestSourceList = new();
+    MasterDataResult repairLocationList = new();
+    MasterDataResult customerLocationsList = new();
+    MasterDataResult buNamesList = new();
+
+
+    private bool showMultiplePlus = false;
+    // public string SelectedValue { get; set; } = "Single";
+
+    public string SelectedValue { get; set; } = "Single";
+    public List<string> Items { get; set; } = new List<string> { "Single", "Multiple" };
+
+
+    private bool divExectiveName = false;
+    private bool divCCNumber = false;
+    private bool divGRFOComment = false;
+
+
+    private void OnRadiochange(object sender)
+    {
+        SelectedValue = (string)sender;
+        showMultiplePlus = SelectedValue.Equals("Multiple");
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        editContext = new(Model);
+        validationMessages = new(editContext);
+        requestCategoryList = await _iMasterData.GetMasterDataList("RepairCategory", "RepairCategoryId", "RepairCategory");
+        businessTypeList = await _iMasterData.GetMasterDataList("BusinessType", "BusinessTypeId", "BusinessType");
+        requestSourceList = await _iMasterData.GetMasterDataList("RequestorSource", "RequestorSourceId", "RequestorSource");
+        repairLocationList = await _iMasterData.GetMasterDataList("RepairLocation", "RepairLocationId", "RepairLocation");
+        customerLocationsList = await _iMasterData.GetMasterDataList("CustomerLocations", "CustomerLocationId", "CustomerLocations");
+        buNamesList = await _iMasterData.GetMasterDataList("BUNames", "BUNameId", "BUName");
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JSRuntime.InvokeAsync<string>("ConvertDatatable", new object[] { "#dtRequest", Searchable });
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected async Task Save()
+    {       
+        List<APVDataModels> data = multipleData;
+        if(multipleData.Count == 1)
+        {
+            Model.partDescription = multipleData[0].partDescription;
+            Model.stdCostBasePart = multipleData[0].stdCostBasePart;
+            Model.annualRepairForecast = multipleData[0].annualRepairForecast;
+            Model.extendedSpendPotential = multipleData[0].extendedSpendPotential;
+            Model.t1CustomerQty = multipleData[0].t1CustomerQty;
+            Model.t2CustomerQty = multipleData[0].t2CustomerQty;
+            Model.mg3 = multipleData[0].mg3;
+            Model.pbg = multipleData[0].pbg;
+
+            List<RequestPostModels> request = new List<RequestPostModels>();
+            request.Add(Model);
+            await _iRequest.SaveRequest(request);
+        }
+        else
+        {
+            List<RequestPostModels> request = new List<RequestPostModels>();
+
+            for (int i = 0; i < multipleData.Count; i++)           
+            {                
+                request.Add(new RequestPostModels
+                {             
+                    requestId=Model.requestId,
+                    annualRepairForecast1 = Model.annualRepairForecast1,
+                    annualRepairForecast2 = Model.annualRepairForecast2,                    
+                    buNameId = Model.buNameId,
+                    businessCaseStatus = Model.businessCaseStatus,
+                    businessTypeId = Model.businessTypeId,
+                    ccNumber = Model.ccNumber,
+                    comments = Model.comments,
+                    customerLocationId = Model.customerLocationId,
+                    exectiveName = Model.exectiveName,                    
+                    grfoComment = Model.grfoComment,
+                    hdfbuNameId = Model.hdfbuNameId,
+                    needByDate=Model.needByDate,
+                    partRequestId=Model.partRequestId,
+                    pilotReviewStatus=Model.pilotReviewStatus,
+                    prdDate=Model.prdDate,
+                    prdImplementation=Model.prdImplementation,
+                    repairLocationId=Model.repairLocationId,
+                    requestCategoryId=Model.requestCategoryId,                    
+                    requestor=Model.requestor,
+                    requestorProjectGroup=Model.requestorProjectGroup,
+                    requestSourceId=Model.requestSourceId,
+                    requestType=Model.requestType,
+                    screeningStatus=Model.screeningStatus,
+                    solutionPartNumber=Model.solutionPartNumber,
+                    targetCustomer=Model.targetCustomer,
+                    
+
+                    basePartNumber = multipleData[i].basePartNumber,
+                    partDescription = multipleData[i].partDescription,
+                    stdCostBasePart = multipleData[i].stdCostBasePart,
+                    annualRepairForecast = multipleData[i].annualRepairForecast,
+                    extendedSpendPotential = multipleData[i].extendedSpendPotential,
+                    t1CustomerQty = multipleData[i].t1CustomerQty,
+                    t2CustomerQty = multipleData[i].t2CustomerQty,
+                    mg3 = multipleData[i].mg3,
+                    pbg = multipleData[i].pbg,                });                      
+            }
+            await _iRequest.SaveRequest(request);
+        }
+    }
+
+    protected async Task AddBasepart(string basePartNumber)
+    {
+        if(showMultiplePlus || multipleData.Count==0)
+        {
+            APVDataResponse objData = await _iAPVDataData.GetApvDatList(basePartNumber);
+            if (objData.isTransactionDone)
+            {
+                if (objData.locationPart != null)
+                {
+                    string customerIds = string.Join(",", objData.locationPart.Distinct().Select(x => x.shiptocust.ToString()).ToArray());
+                    if (!string.IsNullOrEmpty(customerIds))
+                    {
+                        customerResult objCustomerList = await _iRequest.GetCustomerList(customerIds);
+
+                        if (objCustomerList.isTransactionDone)
+                        {
+                            if (objCustomerList.customers != null)
+                            {
+                                foreach (var item in objCustomerList.customers)
+                                {
+                                    (from k in objData.locationPart
+                                     where k.shiptocust == item.customerName
+                                     select k).ToList().ForEach(k => k.T1T2Category = item.customerType);
+                                }
+                                objData.APVData.t1CustomerQty = objData.locationPart.Where(x => x.T1T2Category == "T1" || x.T1T2Category == "t1").Sum(m => m.dh_qty);
+                                objData.APVData.t2CustomerQty = objData.locationPart.Where(x => x.T1T2Category == "T2" || x.T1T2Category == "t2").Sum(m => m.dh_qty);
+                            }
+                        }
+                    }
+                }
+            }
+            multipleData.Add(objData.APVData);
+        }
+    }
+
+    private Task OnRequestSourceChanged(int value)
+    {
+        divExectiveName = divCCNumber = divGRFOComment = false;
+
+        // Assign the selected value to the Model 
+        Model.requestSourceId = value;
+
+        if (Model.requestSourceId == 2) {
+            divExectiveName = true;
+        }
+        if (Model.requestSourceId == 3) {
+            divCCNumber = true;
+        }
+        if (Model.requestSourceId == 4) {
+            divGRFOComment = true;
+        }
+
+        return Task.CompletedTask;
+    }   
+
+}
+
+
