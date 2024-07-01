@@ -12,6 +12,39 @@ function ConvertDatatable(table, searching) {
 }
 
 
+function ConvertMultiSelect(multiSelectControl, selectText, result) {
+
+    
+
+    //if (result.isTransactionDone) {
+
+    //    $(multiSelectControl + ' option').each(function (index, option) {
+    //        $(option).remove();
+    //    });
+
+    //    $(multiSelectControl + ' ul li').remove();
+
+    //    var optionhtml = null;
+    //    for (var i = 0; i < result.data.length; i++) {
+
+    //        // alert(JSON.stringify(result.data[i]))
+
+    //        //var selected = (selectedValue.indexOf(result.data[i]["columnId"]) >= 0) ? 'selected' : '';
+    //        $(multiSelectControl).append("<option value='" + result.data[i]["columnId"] + "'>" + result.data[i]["columnValue"] + "</option>");
+    //    }
+
+    //    $(multiSelectControl + ' ul li').remove();
+
+    //    $(multiSelectControl).multiselect({
+    //        columns: 1,
+    //        placeholder: selectText,
+    //        selectAll: true
+    //    });
+    //}
+
+}
+
+
 //var request_events = function () {
 
 //    loadRequest = function () {

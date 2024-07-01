@@ -4,6 +4,8 @@
 @inject IAPVDataData _iAPVDataData
 @inject IMasterData _iMasterData
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime;
+@using System.Data
+@using System.Linq
 
 <PageTitle>Request</PageTitle>
 
@@ -15,7 +17,7 @@
 
                 <EditForm Model="Model" class="form-horizontal form-label-left" OnInvalidSubmit="Save">
                     <DataAnnotationsValidator />
-                    @* <ValidationSummary /> *@
+                    
                     <div class="row">
                         <div class="col-md-12 col-sm-12 col-xs-12">
                             <div class="x_content">
@@ -211,7 +213,7 @@
                                             </div>
 
                                             <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
-                                                <div class="form-group">
+                                                @* <div class="form-group">
                                                     <label asp-for="buNameId" class="col-form-label-sm">BU Name:</label>
                                                     <div class="input-group">                                                        
                                                         <InputSelect id="buNameId" @bind-Value="Model.buNameId" class="form-control form-control-sm">   
@@ -225,7 +227,11 @@
                                                                 }
                                                         </InputSelect>
                                                     </div>
-                                                </div>
+                                                </div> *@
+
+                                                 <label asp-for="buNameId" class="col-form-label-sm">BU Name:</label>                                               
+                                                 <SimpleMultiselect Options="_items" @bind-SelectedOptions="_selectedItems"/>
+
                                             </div>
 
                                             <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
@@ -463,6 +469,9 @@
 
 @code {
 
+    private readonly List<string> _items = new() {  };
+    private List<string> _selectedItems = new();
+
     EditContext editContext;
     ValidationMessageStore validationMessages;    
     bool valid;
@@ -508,12 +517,29 @@
         repairLocationList = await _iMasterData.GetMasterDataList("RepairLocation", "RepairLocationId", "RepairLocation");
         customerLocationsList = await _iMasterData.GetMasterDataList("CustomerLocations", "CustomerLocationId", "CustomerLocations");
         buNamesList = await _iMasterData.GetMasterDataList("BUNames", "BUNameId", "BUName");
+
+        if(buNamesList.isTransactionDone && buNamesList.data!=null)
+        {
+            foreach (var item in buNamesList.data)
+            {
+                _items.Add(item.columnValue);
+            }
+        }
     }
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
-        await JSRuntime.InvokeAsync<string>("ConvertDatatable", new object[] { "#dtRequest", Searchable });
+        await JSRuntime.InvokeAsync<string>("ConvertMultiSelect", new object[] { "#buNameId", "Repair Category" ,buNamesList });
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void CheckboxChanged(ChangeEventArgs e, string key)
+    {
+        var i = buNamesList.data.FirstOrDefault(i => i.columnId == key);
+        if (i != null)
+        {
+            // i.Selected = (bool)e.Value;
+        }
     }
 
     protected async Task Save()
@@ -638,6 +664,14 @@
 
         return Task.CompletedTask;
     }   
+
+    
+    private void ValueChanged12(ChangeEventArgs args)
+    {
+        // _size = Convert.ToInt32((String)args.Value);
+        // Cyclone.CycloneSize = _size;
+        // CalculateStandardDimensions();
+    }
 
 }
 

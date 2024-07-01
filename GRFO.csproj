@@ -7,8 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.102.2" />
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="SimpleBlazorMultiselect">
+      <HintPath>Resources\SimpleBlazorMultiselect.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -345,8 +345,11 @@
                                                             @foreach (var item in multipleData)
                                                             {
                                                                 if(item != null)
-                                                                {                                                                                                                            
-                                                                    <tr>
+                                                            {
+                                                                
+                                                                var bgColor = item.annualRepairForecast <= 10 ? "table-success" : "table-danger";
+                                                                
+                                                                    <tr class="@bgColor">
                                                                         <td>
                                                                             <InputText @bind-Value="item.basePartNumber" class="form-control form-control-sm"></InputText>                                                                        
                                                                         </td>
@@ -643,7 +646,7 @@
         }
 
         return Task.CompletedTask;
-    }   
+    }        
 
 }
 
