@@ -136,9 +136,92 @@
 
     private async void DownloadExcel()
     {
-        
-       // XLWorkbook workbook
 
+        using var wbook = new XLWorkbook();
+        var ws = wbook.AddWorksheet("Sheet1");
+
+        // ws.FirstCell().Value = 150;
+        // ws.Cell(3, 2).Value = "Hello there!";
+
+        // ws.Column(2).AdjustToContents();
+
+        int Columns = 4;
+        int Rows = 5;
+
+
+        List<ExcelData> _Data = populateData();
+
+
+        #region Creating Headers
+
+        ws.Cell(1,1).Value = "Student Id";
+        ws.Cell(1,2).Value = "First Name";
+        ws.Cell(1,3).Value = "Last Name";
+        ws.Cell(1,4).Value = "Class";
+        ws.Cell(1,5).Value = "Mark 1";
+        ws.Cell(1,6).Value = "Mark 2";
+        ws.Cell(1,7).Value = "Total";
+
+
+        // for (int i = 0; i <= _Data.Count; i++)
+        // {
+        //     //ws.Cell(1,i).Value = _Data;
+        //     ws.Column(i+1).AdjustToContents();            
+        // }
+
+        #endregion
+        for (int i = 0; i < _Data.Count; i++)
+        {
+            ws.Cell(i + 2, 1).Value = _Data[i].studentId;
+            ws.Cell(i + 2, 2).Value = _Data[i].firstName;
+            ws.Cell(i + 2, 3).Value = _Data[i].secondName;
+            ws.Cell(i + 2, 4).Value = _Data[i].className;
+            ws.Cell(i + 2, 5).Value = _Data[i].Mark1;
+            ws.Cell(i + 2, 6).Value = _Data[i].Mark2;
+            ws.Cell(i + 2, 7).FormulaA1 = "E" + (i + 2) + "+F" + (i + 2) + "";
+        }
+
+
+
+        //ws.Cell("A6").SetValue("falcon").SetActive();
+
+
+
+        wbook.SaveAs("data.xlsx");
+
+        // XLWorkbook workbook
+
+    }
+
+
+    public class ExcelData
+    {
+        public int studentId { get; set; }
+        public string firstName { get; set; }
+        public string secondName { get; set; }
+        public string className { get; set; }
+        public double Mark1 { get; set; }
+        public double Mark2 { get; set; }
+    }
+
+    public List<ExcelData> populateData()
+    {
+        List<ExcelData> data = new List<ExcelData>();
+
+        for (int i = 0; i < 5; i++)
+        {
+            data.Add(
+            new ExcelData
+                {
+                    studentId = i + 1,
+                    firstName = "First Name " + (1 + i),
+                    secondName = "Second Name " + (1 + i),
+                    className = "VI A",
+                    Mark1 = 12 + i,
+                    Mark2=25 + i
+                });
+        }
+        return data;
     }
 
 }
