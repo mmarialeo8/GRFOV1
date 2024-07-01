@@ -1,8 +1,14 @@
-﻿@page "/request"
+﻿@page "/"
 @inject WeatherForecastService ForecastService
 @inject IRequest _iRequest
+@inject IAPVDataData _iapvData
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime;
 @using ClosedXML.Excel
+@using NPOI.SS.UserModel
+@using NPOI.XSSF.UserModel
+@using System.Data
+@using SoloX.BlazorJsBlob
+@inject IBlobService BlobService
 
 <PageTitle>Request</PageTitle>
 
@@ -134,65 +140,91 @@
         await base.OnAfterRenderAsync(firstRender);
     }
 
+
     private async void DownloadExcel()
     {
 
-        using var wbook = new XLWorkbook();
-        var ws = wbook.AddWorksheet("Sheet1");
+        APVDataDownloadResponse _Data = await _iapvData.GetDownloadData("0360-4597");
 
-        // ws.FirstCell().Value = 150;
-        // ws.Cell(3, 2).Value = "Hello there!";
+        string[] basepartNumbers = ("0360-4597").Split(',');
 
-        // ws.Column(2).AdjustToContents();
+        DataTable dtExcelSource = GetExcelTemplate();
 
-        int Columns = 4;
-        int Rows = 5;
+        string Files = "wwwroot/UploadExcel/Request_Master.xlsx";
 
-
-        List<ExcelData> _Data = populateData();
-
-
-        #region Creating Headers
-
-        ws.Cell(1,1).Value = "Student Id";
-        ws.Cell(1,2).Value = "First Name";
-        ws.Cell(1,3).Value = "Last Name";
-        ws.Cell(1,4).Value = "Class";
-        ws.Cell(1,5).Value = "Mark 1";
-        ws.Cell(1,6).Value = "Mark 2";
-        ws.Cell(1,7).Value = "Total";
-
-
-        // for (int i = 0; i <= _Data.Count; i++)
-        // {
-        //     //ws.Cell(1,i).Value = _Data;
-        //     ws.Column(i+1).AdjustToContents();            
-        // }
-
-        #endregion
-        for (int i = 0; i < _Data.Count; i++)
+        string sWebRootFolder = @"wwwroot/UploadExcel/";
+        string sFileName = @"Request_Master.xlsx";           
+        FileInfo file = new FileInfo(Path.Combine(sWebRootFolder, sFileName));
+        var memory = new MemoryStream();
+        using (var fs = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Create, FileAccess.Write))
         {
-            ws.Cell(i + 2, 1).Value = _Data[i].studentId;
-            ws.Cell(i + 2, 2).Value = _Data[i].firstName;
-            ws.Cell(i + 2, 3).Value = _Data[i].secondName;
-            ws.Cell(i + 2, 4).Value = _Data[i].className;
-            ws.Cell(i + 2, 5).Value = _Data[i].Mark1;
-            ws.Cell(i + 2, 6).Value = _Data[i].Mark2;
-            ws.Cell(i + 2, 7).FormulaA1 = "E" + (i + 2) + "+F" + (i + 2) + "";
+
+            IWorkbook workbook;
+            workbook = new XSSFWorkbook();
+
+            ISheet excelSheet = workbook.CreateSheet("Sheet1");
+            IRow row = excelSheet.CreateRow(0);
+
+            #region Sheet 2
+
+            ISheet sheet2 = workbook.CreateSheet("Sheet2");
+            IRow row2 = sheet2.CreateRow(0);
+            row2.CreateCell(0).SetCellValue("S.No");
+            row2.CreateCell(1).SetCellValue("Data");
+
+            IRow row21 = sheet2.CreateRow(1);
+            row21.CreateCell(0).SetCellFormula("Sheet1!E2*Sheet1!F2");
+            row21.CreateCell(1).SetCellFormula("Sheet1!E2+Sheet1!F2");
+
+            #endregion Sheet 2
+
+            #region Sheet 3
+
+            // ISheet sheet3 = workbook.CreateSheet("Sheet3");
+            // IRow row3 = sheet3.CreateRow(0);
+            // row3.CreateCell(0).SetCellValue("S.No");
+            // row3.CreateCell(1).SetCellValue("Data");
+
+            #endregion Sheet 3
+
+            #region Creating Top Rows
+
+            for (int i = 0; i < dtExcelSource.Columns.Count; i++)
+            {
+                row.CreateCell(i).SetCellValue(dtExcelSource.Columns[i].ColumnName);
+            }
+
+            #endregion
+
+            for (int i = 0; i < 1; i++)
+            {
+                row = excelSheet.CreateRow(i + 1);
+
+                row.CreateCell(0).SetCellValue(_Data.apvData.material);
+                row.CreateCell(1).SetCellValue(_Data.apvData.material_desc);
+                row.CreateCell(2).SetCellValue(_Data.apvData.mg3);
+                row.CreateCell(3).SetCellValue(_Data.apvData.pbg);
+                row.CreateCell(4).SetCellValue(_Data.apvData.cost);
+                row.CreateCell(5).SetCellValue(_Data.apvData.gfcst);
+
+            }
+
+            workbook.Write(fs);
+
         }
+        using (var stream = new FileStream(Path.Combine(sWebRootFolder, sFileName), FileMode.Open))
+        {
+            await stream.CopyToAsync(memory);
+        }
+        memory.Position = 0;
+            
+        var b64 = Convert.ToBase64String(memory.ToArray());
+        // Finally call the SaveAsFileAsync with the data URL.
+        var dataUrl = $"data:image/jpeg;base64," + b64;
+        await BlobService.SaveAsFileAsync(dataUrl, "Request_Master.xlsx");
 
-
-
-        //ws.Cell("A6").SetValue("falcon").SetActive();
-
-
-
-        wbook.SaveAs("data.xlsx");
-
-        // XLWorkbook workbook
 
     }
-
 
     public class ExcelData
     {
@@ -223,6 +255,20 @@
         }
         return data;
     }
+
+    public DataTable GetExcelTemplate()
+        {
+            DataTable dt = new DataTable();
+            dt.TableName = "";
+           
+            dt.Columns.Add("Base Part Number", typeof(string));
+            dt.Columns.Add("Description", typeof(string));
+            dt.Columns.Add("MG3", typeof(int));
+            dt.Columns.Add("PBG", typeof(string));
+            dt.Columns.Add("Cost", typeof(int));
+            dt.Columns.Add("GFCST", typeof(int));
+            return dt;
+        }
 
 }
 

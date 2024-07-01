@@ -43,7 +43,7 @@ namespace GRFO.Data.Models
         public virtual int buNameId { get; set; }
         public virtual int repairLocationId { get; set; }
         public virtual string targetCustomer { get; set; }
-        public virtual int customerLocationId { get; set; }
+        public virtual string customerLocationId { get; set; }
         public virtual int hdfbuNameId { get; set; }
         public virtual double annualRepairForecast1 { get; set; }
         public virtual double annualRepairForecast2 { get; set; }

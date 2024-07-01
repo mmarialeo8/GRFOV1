@@ -8,6 +8,7 @@ namespace GRFO.Data.Service
     public interface IAPVDataData
     {
         Task<APVDataResponse> GetApvDatList(string basePartNumber);
+        Task<APVDataDownloadResponse> GetDownloadData(string basePartNumber);
     }
     public class APVDataService : IAPVDataData
     {
@@ -57,6 +58,48 @@ namespace GRFO.Data.Service
             }
             return result;
         }
+
+
+        public async Task<APVDataDownloadResponse> GetDownloadData(string basePartNumber)
+        {
+            var result = new APVDataDownloadResponse();
+            using (IDbConnection _db = new SqlConnection(sConnectionString))
+            {
+                try
+                {
+                    var query = @"select 
+                        material, material_desc, mg3, pbg, cost, gfcst
+                        from 
+                        [RMS_APV].[dbo].[Part_Dimention]
+                        where material=@basePartNumber";
+
+                    var res = (await _db.QueryMultipleAsync
+                        (sql: query,
+                        new
+                        {
+                            basePartNumber = basePartNumber
+                        },
+                        commandType: CommandType.Text));
+                    if (res != null)
+                    {
+                        result.isTransactionDone = true;
+                        result.apvData = res.Read<APVDataDownloadModels>().FirstOrDefault();                        
+                    }
+                    else
+                    {
+                        result.isTransactionDone = false;
+                        result.transactionMessage = "No Records Found";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    result.isTransactionDone = false;
+                    result.transactionMessage = ex.ToString();
+                }
+            }
+            return result;
+        }
+
 
     }
 }

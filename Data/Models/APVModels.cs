@@ -41,4 +41,24 @@ namespace GRFO.Data.Models
         public List<APVDataModels> APVData { get; set; }
     }
 
+
+    public class APVDataDownloadModels
+    {
+        public string material { get; set; }
+        public string material_desc { get; set; }
+        public string? mg3 { get; set; }
+        public string? pbg { get; set; }
+        public string? cost { get; set; }
+        public string? gfcst { get; set; }
+    }
+
+    public class APVDataDownloadResponse : TransactionWrapper
+    {
+        public APVDataDownloadModels apvData { get; set; }
+    }
+
+    public class APVDataDownloadResult : TransactionWrapper
+    {
+        public List<APVDataDownloadModels> apvData { get; set; }
+    }
 }

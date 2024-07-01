@@ -263,7 +263,7 @@
                                             </div>
 
                                             <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
-                                                <div class="form-group">
+                                                @* <div class="form-group">
                                                     <label asp-for="customerLocationId" class="col-form-label-sm">Customer Location:</label>
                                                     <div class="input-group">                                                       
                                                          <InputSelect id="customerLocationId" @bind-Value="Model.customerLocationId" class="form-control form-control-sm">   
@@ -277,7 +277,11 @@
                                                                 }
                                                         </InputSelect>
                                                     </div>
-                                                </div>
+                                                </div> *@
+
+                                                <label asp-for="customerLocationId" class="col-form-label-sm">Customer Location:</label>                                               
+                                                 <SimpleMultiselect Options="_items" @bind-SelectedOptions="_selectedItems"/>
+
                                             </div>
 
                                             <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback item form-group">
@@ -466,6 +470,9 @@
 
 @code {
 
+    private readonly List<string> _items = new() {  };
+    private List<string> _selectedItems = new();
+
     [Parameter]
     public string groupRequestId { get; set; }
     EditContext editContext;
@@ -514,9 +521,20 @@
         customerLocationsList = await _iMasterData.GetMasterDataList("CustomerLocations", "CustomerLocationId", "CustomerLocations");
         buNamesList = await _iMasterData.GetMasterDataList("BUNames", "BUNameId", "BUName");
 
+
+        if(customerLocationsList.isTransactionDone && customerLocationsList.data!=null)
+        {
+            foreach (var item in customerLocationsList.data)
+            {
+                _items.Add(item.columnValue);
+            }
+        }
+
         RequestResponse request = await _iRequest.GetRequestById(Convert.ToInt32(groupRequestId));
         Model = request.request;
         multipleData = request.apvData;
+        _selectedItems = request.request.customerLocationId.Split(',').ToList();
+
     }
 
     protected async override Task OnAfterRenderAsync(bool firstRender)
@@ -527,6 +545,8 @@
 
     protected async Task Save()
     {       
+        Model.customerLocationId = string.Join(",", _selectedItems);
+
         List<APVDataModels> data = multipleData;
         if(multipleData.Count == 1)
         {
