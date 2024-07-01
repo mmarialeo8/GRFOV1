@@ -13,7 +13,9 @@ namespace GRFO.Data.Service
     public class APVDataService : IAPVDataData
     {
         private readonly IConfiguration _iConfiguration;
+        
         private readonly string sConnectionString;
+
         public APVDataService(IConfiguration _iConfiguration)
         {
             this._iConfiguration = _iConfiguration;
